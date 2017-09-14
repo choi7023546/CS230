@@ -209,7 +209,7 @@ int replaceByte(int x, int n, int c) {
  *   Legal ops: ~ & ^ | + << >>
  *   Max ops: 12
  *   Rating: 4 
- *
+ */
 int bang(int x) {
   return 2;
 }
@@ -244,7 +244,8 @@ int tmax(void) {
  *   Rating: 2
  */
 int implication(int x, int y) {
-    return 2;
+    
+    return (!x)|(y);
 }
 /* 
  * negate - return -x 
@@ -254,17 +255,19 @@ int implication(int x, int y) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+    
+    return ~x+1;
 }
 /* 
- * conditional - same as x ? y : z 
+ * conditional - same as x ? y : z (if x is true, return y. if x is false, return z) 
  *   Example: conditional(2,4,5) = 4
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 16
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+    
+    return 2;
 }
 /* 
  * addOK - Determine if can compute x+y without overflow
@@ -275,7 +278,9 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int addOK(int x, int y) {
+
   return 2;
+
 }
 /* 
  * isGreater - if x > y  then return 1, else return 0 
@@ -285,7 +290,19 @@ int addOK(int x, int y) {
  *   Rating: 3
  */
 int isGreater(int x, int y) {
-  return 2;
+    int x_sign = (x>>31);
+    int y_sign = (y>>31);
+    /* case1 covers when sign of x and y are same 
+    x_sign^y_sign will be 0, so inverse it to True.
+    if x>y, x-y>0. In other words, x+(~y+1) > 0.
+    */
+    int case1 = !(x_sign^y_sign) & !((x+(~y))>>31); 
+    /* case2
+    */
+
+    int case2 = !(x_sign) & y_sign;
+
+  return case1 | case2;
 }
 /*
  * satMul3 - multiplies by 3, saturating to Tmin or Tmax if overflow
