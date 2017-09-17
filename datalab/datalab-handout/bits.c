@@ -201,7 +201,7 @@ int leastBitPos(int x) {
  *   Rating: 3
  */
 int replaceByte(int x, int n, int c) {
-     return 2;
+     return (~((0xFF)<<(n<<3)) & x) | (c<<(n<<3)) ;
 }
 /* 
  * bang - Compute !x without using !
@@ -211,7 +211,8 @@ int replaceByte(int x, int n, int c) {
  *   Rating: 4 
  */
 int bang(int x) {
-  return 2;
+    int negate_x = ~x+1;  
+    return (((x>>31) & 0x1) | ((negate_x>>31) & 0x1)) ^ 0x1;
 }
 /*
  * leftBitCount - returns count of number of consective 1's in
@@ -267,7 +268,7 @@ int negate(int x) {
  */
 int conditional(int x, int y, int z) {
     
-    return 2;
+    return (y&(!x+(~0))) + (z&(!!x+(~0)));
 }
 /* 
  * addOK - Determine if can compute x+y without overflow
@@ -278,8 +279,12 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int addOK(int x, int y) {
+    int x_sign = (x>>31)&0x1;
+    int y_sign = (y>>31)&0x1;
+    int add_sign = ((x+y)>>31)&0x1;
+    
 
-  return 2;
+    return (x_sign^y_sign) | !((x_sign^y_sign)|(x_sign^add_sign));
 
 }
 /* 
@@ -316,7 +321,16 @@ int isGreater(int x, int y) {
  *  Rating: 3
  */
 int satMul3(int x) {
-    return 2;
+    
+    int multi2 = x+x;
+    int multi3 = x+x+x;
+    int sign_x = 0x1 & (x>>31);
+    int sign_m2 = 0x1 & (multi2>>31);
+    int sign_m3 = 0x1 & (multi3>>31);
+    int overflow = (sign_x ^ sign_m2) | (sign_m2 ^ sign_m3);
+    return ((~(!overflow)+1) & multi3) | ((~(overflow)+1) & (sign_x + ~(0x1<<31)));
+
+
 }
 /* 
  * float_abs - Return bit-level equivalent of absolute value of f for
