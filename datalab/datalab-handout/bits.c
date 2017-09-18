@@ -1,7 +1,7 @@
 /* 
  * CS:APP Data Lab 
  * 
- * <Please put your name and userid here>
+ * <choi jee young and 20150774>
  * 
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
@@ -172,6 +172,7 @@ NOTES:
  *   Rating: 1
  */
 int bitAnd(int x, int y) {
+  // by the De Morgan's law
   int result;
   result = ~(~x|~y);
   return result;
@@ -186,6 +187,7 @@ int bitAnd(int x, int y) {
  *   Rating: 2 
  */
 int leastBitPos(int x) {
+    // if converse 0,1 and add 1, it remains only the least bit when apply &.
     int opposite = ~x +1;
     return (opposite & x);
 
@@ -201,6 +203,8 @@ int leastBitPos(int x) {
  *   Rating: 3
  */
 int replaceByte(int x, int n, int c) {
+    // we have to move c to nth byte. one byte is 8 bits, so multiply 8 to n first and move 11111111 (= 0xFF) to that position.
+    // nth byte of x have to be 00000000. 
      return (~((0xFF)<<(n<<3)) & x) | (c<<(n<<3)) ;
 }
 /* 
@@ -211,6 +215,9 @@ int replaceByte(int x, int n, int c) {
  *   Rating: 4 
  */
 int bang(int x) {
+    // if x is 0, return 1. if x is not 0, return 0.
+    // we can determine that x is not 0, if sign of x and sign of negate x are different.
+
     int negate_x = ~x+1;  
     return (((x>>31) & 0x1) | ((negate_x>>31) & 0x1)) ^ 0x1;
 }
@@ -223,7 +230,31 @@ int bang(int x) {
  *   Rating: 4
  */
 int leftBitCount(int x) {
-  return 2;
+    int result = x & (x>>1);
+    int temp = result>>2;
+    result = result & temp;
+    temp = result>>4;
+    result = result & temp;
+    temp = result>>8;
+    result = result & temp;
+    temp = result>>16;
+    result = result & temp;
+    temp = result>>32;
+    result = result & temp;
+
+    int mask2 = 0x55<<24 + 0x55<<16 + 0x55<<8 + 0x55;
+    int mask4 = (0x33<<24) + (0x33<<16) + (0x33<<8) + 0x33; 
+    int mask8 = (0xF<<24) + (0xF<<16) + (0xF<<8) + 0xF;
+    int mask16 = (0xFF<<16) + 0xFF;
+    int mask32 = (0xFF<<8) + 0xFF; 
+
+    int a1 = (result&mask2) + ((result>>1)&mask2);
+    int a2 = (a1&mask4) + ((a1>>2)&mask4);
+    int a3 = (a2&mask8) + ((a2>>4)&mask8);
+    int a4 = (a3&mask16) + ((a3>>8)&mask16);
+    int a5 = (a4&mask32) + ((a4>>16)&mask32);
+
+    return a5;
 }
 /* 
  * TMax - return maximum two's complement integer 
@@ -232,6 +263,8 @@ int leftBitCount(int x) {
  *   Rating: 1
  */
 int tmax(void) {
+    // maximum two's complement integer is when sign bit is 0 and rest of bits are 1.
+    // so we have to inverse 0x40000000 (is same with move 31 bits of 0x1) 
      int c_n = 1;
      return ~(c_n<<31);
 }
@@ -245,7 +278,7 @@ int tmax(void) {
  *   Rating: 2
  */
 int implication(int x, int y) {
-    
+    // by definition of implication in descrete mathematics, not x or y
     return (!x)|(y);
 }
 /* 
@@ -256,18 +289,22 @@ int implication(int x, int y) {
  *   Rating: 2
  */
 int negate(int x) {
-    
     return ~x+1;
 }
 /* 
- * conditional - same as x ? y : z (if x is true, return y. if x is false, return z) 
+ * conditional - same as x ? y : z 
  *   Example: conditional(2,4,5) = 4
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 16
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-    
+    // if x is true, return y. if x is false, return z.
+    // if we want to get y or z , we have to use '&' operation with 0xffffffff
+    // if x is true, !!x is 1 and !x is 0
+    // below expression means that if x is true !x+(~0) is 0xffffffff and !!x+(~0) is 0
+    // therefore, we can get y and ignore z.
+    // opposite case is same as explained
     return (y&(!x+(~0))) + (z&(!!x+(~0)));
 }
 /* 
@@ -279,6 +316,10 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int addOK(int x, int y) {
+    // case 1 : sign x and sign y are different
+    // there is no overflow case
+    // case 2 : sign x and sign y are same
+    // if both signs and sign of x+y, this is overflow
     int x_sign = (x>>31)&0x1;
     int y_sign = (y>>31)&0x1;
     int add_sign = ((x+y)>>31)&0x1;
@@ -299,10 +340,10 @@ int isGreater(int x, int y) {
     int y_sign = (y>>31);
     /* case1 covers when sign of x and y are same 
     x_sign^y_sign will be 0, so inverse it to True.
-    if x>y, x-y>0. In other words, x+(~y+1) > 0.
     */
     int case1 = !(x_sign^y_sign) & !((x+(~y))>>31); 
-    /* case2
+    /* case2 covers when sign of x and y are different
+    if sign of x is 0, return 1. if sign of y is 0, return0.
     */
 
     int case2 = !(x_sign) & y_sign;
@@ -322,6 +363,9 @@ int isGreater(int x, int y) {
  */
 int satMul3(int x) {
     
+    // we have to check signs of x, multi2, multi3. if one of them is different, it is overflow.
+    // if overflow is 1, return TMax or TMin(it depends on sign of x).
+    // if overflow is 0. return value of multi3.
     int multi2 = x+x;
     int multi3 = x+x+x;
     int sign_x = 0x1 & (x>>31);
@@ -344,7 +388,19 @@ int satMul3(int x) {
  *   Rating: 2
  */
 unsigned float_abs(unsigned uf) {
-  return 2;
+    // make uf to absolute value 
+    unsigned sign = 0x1 << 31;
+    unsigned u_mask = ~sign;
+    // plus NaN means infinite. if some value is bigger than plus NaN, it will be all NaN. 
+    unsigned plus_NaN = 0xFF << 23;
+    unsigned result = u_mask & uf;
+    
+    if(result>plus_NaN){
+        return uf;
+    }
+    else{
+        return result;
+    }
 }
 /* 
  * float_f2i - Return bit-level equivalent of expression (int) f
@@ -359,5 +415,42 @@ unsigned float_abs(unsigned uf) {
  *   Rating: 4
  */
 int float_f2i(unsigned uf) {
-  return 2;
+    
+    unsigned exp = (uf>>23) & 0xFF ;
+    unsigned frac = uf & 0x7FFFFF;
+    unsigned bias = 0x7F;
+    unsigned result = frac;
+    
+    // infinite case
+    if(exp==0xFF) {       
+        return 0x80000000u;
+    }
+    // denormalized case and nomalized case that less than 1. make these cases to zero. 
+    if(exp<bias){
+        return 0;
+    }   
+    // nomalized case
+    // overflow case
+    exp = exp-bias;
+    if(exp>=31) {
+        
+        return 0x80000000u;
+    }
+   
+    if(exp>22) {
+        result = frac << (exp-23);
+    }
+    else{
+        result = frac >> (23-exp);    
+    } 
+    
+    result = result +(1<<exp);
+    // reverse to minus if sign of x is 1
+    if((uf>>31&0x1)==1){
+        return - result;
+    }
+    else{
+        return result;
+    }
+
 }
