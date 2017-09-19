@@ -230,6 +230,16 @@ int bang(int x) {
  *   Rating: 4
  */
 int leftBitCount(int x) {
+    int a1;
+    int a2;
+    int a3;
+    int a5;
+    int a4;
+    int mask2 = 0x55<<24 + 0x55<<16 + 0x55<<8 + 0x55;
+     int mask4 = (0x33<<24) + (0x33<<16) + (0x33<<8) + 0x33;    
+     int mask8 = (0xF<<24) + (0xF<<16) + (0xF<<8) + 0xF;
+     int mask16 = (0xFF<<16) + 0xFF;
+    int mask32 = (0xFF<<8) + 0xFF;
     int result = x & (x>>1);
     int temp = result>>2;
     result = result & temp;
@@ -242,17 +252,17 @@ int leftBitCount(int x) {
     temp = result>>32;
     result = result & temp;
 
-    int mask2 = 0x55<<24 + 0x55<<16 + 0x55<<8 + 0x55;
-    int mask4 = (0x33<<24) + (0x33<<16) + (0x33<<8) + 0x33; 
-    int mask8 = (0xF<<24) + (0xF<<16) + (0xF<<8) + 0xF;
-    int mask16 = (0xFF<<16) + 0xFF;
-    int mask32 = (0xFF<<8) + 0xFF; 
+//    int mask2 = 0x55<<24 + 0x55<<16 + 0x55<<8 + 0x55;
+  //  int mask4 = (0x33<<24) + (0x33<<16) + (0x33<<8) + 0x33; 
+   // int mask8 = (0xF<<24) + (0xF<<16) + (0xF<<8) + 0xF;
+   // int mask16 = (0xFF<<16) + 0xFF;
+   // int mask32 = (0xFF<<8) + 0xFF; 
 
-    int a1 = (result&mask2) + ((result>>1)&mask2);
-    int a2 = (a1&mask4) + ((a1>>2)&mask4);
-    int a3 = (a2&mask8) + ((a2>>4)&mask8);
-    int a4 = (a3&mask16) + ((a3>>8)&mask16);
-    int a5 = (a4&mask32) + ((a4>>16)&mask32);
+    a1 = (result&mask2) + ((result>>1)&mask2);
+    a2 = (a1&mask4) + ((a1>>2)&mask4);
+    a3 = (a2&mask8) + ((a2>>4)&mask8);
+    a4 = (a3&mask16) + ((a3>>8)&mask16);
+    a5 = (a4&mask32) + ((a4>>16)&mask32);
 
     return a5;
 }
