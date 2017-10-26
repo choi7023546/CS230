@@ -36,9 +36,9 @@ int initialize_cache ( Cache* cache, int set_index, int lines_per_set)
     // Cache -> sets[i].lines =  malloc( lines_per_set * sizeof(Line) ) 
     // Cache -> sets[i].lines[j].valid = 0
     // Cache -> sets[i].lines[j].priority = 0
-    int number_of_set = ( 2 << set_index );
+    int number_of_set = ( 1 << set_index );
     int i,j;
-    cache -> sets = (Set*) malloc( (number_of_set) * sizeof(Set) )
+    cache -> sets = (Set*) malloc( (number_of_set) * sizeof(Set) );
 
     for ( i=0; i<number_of_set ; i++ ) {
         cache -> sets[i].lines = (Line*) malloc( (lines_per_set) * sizeof(Line) );
@@ -60,26 +60,36 @@ int update ( Cache* cache )
     
     return 0;
 }
-
-//int parse ( Cache* cache, char* readline ) 
-//{
-//    return 0;
-//}
+// M 1234567, 1
+// 
+int parse (/* Cache* cache,*/ char* readline ) 
+{ 
+    char operation = readline[0];
+    char* address_p = strtok(&readline[2], ",");
+    char* nothing;
+    int address = (int)strtol(address_p, &nothing, 16);;
+    printf("operation is %c\n", operation);
+    printf("address is %d\n", address);
+    return 0;
+}
 
 
 
 int main(int argc, char** argv)
 {
+    printf("does printf work?\n");
     if (argc!=9) {
         exit(0);
     }
+    printf("reach here?\n");
 
     char c;
     int set_index;
     int lines_per_set;
     int block_bit;	
-    char* trace_file ;
-    printf("%d, %d, %d, %c, %p",set_index, lines_per_set, block_bit, c, trace_file);
+    char trace_file[50] ;
+    char read_line[50];
+    FILE* file;
 
     while ( ( c = getopt(argc, argv, "s:E:b:t:") ) != -1) {
         switch(c) {
@@ -100,6 +110,21 @@ int main(int argc, char** argv)
                 break;
         }	     
     }
+    Cache cache;
+    //initialize_cache( &cache, set_index, lines_per_set ); 
+    file =  fopen( trace_file, "r");
+    printf("right before while\n");
+    while( fgets(read_line,50,file) != NULL ) {
+        printf("while working\n");
+        if ( read_line[0] == ' ' ) {
+            printf("If printed, parse is the probelm!\n");
+            parse( /*&cache, */&read_line[1] );    
+        }
+
+    
+    }
+
+
     printSummary(hit_count, miss_count, eviction_count);
     return 0;
 }
