@@ -104,11 +104,15 @@ int update ( Cache* cache, int set, int lines_per_set, int line_index,  int _cas
     }
     // case 2 : hit
     else if (_case == 2) {
-        i=0;
         p = cache->sets[set].lines[line_index].priority;
-        while( (cache->sets[set].lines[i].priority!=0) && (cache->sets[set].lines[i].priority < p) ) {
-            cache->sets[set].lines[i].priority++;
-            i++;
+        for ( i = 0 ; i < lines_per_set ; i++) {
+            if ( cache->sets[set].lines[i].priority == 0 ) {
+                break;
+            }
+            
+            if ( cache->sets[set].lines[i].priority<p) {
+                cache->sets[set].lines[i].priority++;
+            }
         }
         cache->sets[set].lines[line_index].priority = 1;
     }
@@ -144,7 +148,7 @@ int parse ( Cache* cache, char* readline, int set_index, int block_bit, int line
    //  printf("set is %d\n", set);
     //case1 : all lines are invalid
     if (cache->sets[set].valid_line == 0) {
-     //   printf("all lines are invalid\n");
+      //  printf("all lines are invalid\n");
        // printf("miss\n");
         cache->sets[set].lines[0].valid = 1;
         cache->sets[set].lines[0].tag = target;
@@ -157,13 +161,14 @@ int parse ( Cache* cache, char* readline, int set_index, int block_bit, int line
     }
     //case2 : all lines are valid
     else if (cache->sets[set].valid_line == lines_per_set) {
-       // printf("all lines are valid\n");
+      //  printf("all lines are valid\n");
         int index = find_index( cache, set, target, lines_per_set );
         // miss eviction
         if ( index == -1 ) {
-       //    printf("miss eviction\n");
+            printf("set is %d\n",set);
+            printf("miss eviction\n");
             int update_index = update( cache, set, lines_per_set, 0, 1);
-         //   printf("------------index = %d---------",update_index );
+            //   printf("------------index = %d---------",update_index );
             cache->sets[set].lines[update_index].tag = target;
             miss_count++;
             eviction_count++;
@@ -173,7 +178,8 @@ int parse ( Cache* cache, char* readline, int set_index, int block_bit, int line
         }
         // hit
         else {
-           // printf("hit\n");
+            printf("hit\n");
+            printf("set is %d\n", set);
             update( cache, set, lines_per_set, index,2);
             hit_count++;
             if(operation == 'M') {
@@ -183,11 +189,11 @@ int parse ( Cache* cache, char* readline, int set_index, int block_bit, int line
     }
     //case3 : some lines are valid
     else {
-     //   printf("some lines are valid\n");
+      //  printf("some lines are valid\n");
         int index = find_index( cache, set, target, lines_per_set );
         // miss
         if ( index == -1 ) {
-       //     printf("miss\n");
+        //    printf("miss\n");
             int update_index = update( cache, set, lines_per_set, 0, 3);
              cache->sets[set].lines[update_index].valid = 1;
              cache->sets[set].lines[update_index].tag = target;
@@ -199,7 +205,8 @@ int parse ( Cache* cache, char* readline, int set_index, int block_bit, int line
         }
         // hit
         else {
-         //   printf("hit\n");
+           printf("hit\n");
+            printf("set is %d\n", set);
             update( cache, set, lines_per_set, index, 2);
             hit_count++;
             if (operation == 'M') {
