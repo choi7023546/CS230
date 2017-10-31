@@ -21,7 +21,41 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
  */
 char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
-{
+{   // we can devide a whole matrix into small blocks which are 8x8 matrices.
+    int i;
+    int j;
+    int tmp;
+    int block_col;
+    int block_row;
+   // int 32_block_col;
+   // int 32_block_row;
+
+    if ( M == 32 ) {
+        for ( block_col = 0 ; block_col < N ; block_col+=8) {
+            for ( block_row = 0 ; block_row < M ; block_row+=8 ) {
+                for ( j = block_col ; j < block_col + 8 ; j++ ) {
+                    for ( i = block_row ; i < block_row + 8 ; i++ ) {
+                        if ( i == j ) {
+                            tmp = A[i][j];
+                        } else {
+                            B[j][i] = A[i][j];
+                        }
+                    if ( block_col == block_row ) {
+                        B[j][j] = tmp;
+                    }
+
+                    }
+                }
+            } 
+        }   
+    } 
+    /*else if ( M == 64) {
+    
+    } 
+    else {
+    
+    }*/
+
 }
 
 /* 
