@@ -27,34 +27,65 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
     int tmp;
     int block_col;
     int block_row;
-   // int 32_block_col;
-   // int 32_block_row;
+    int tmp1;
+    int tmp2;
 
     if ( M == 32 ) {
-        for ( block_col = 0 ; block_col < N ; block_col+=8) {
-            for ( block_row = 0 ; block_row < M ; block_row+=8 ) {
-                for ( j = block_col ; j < block_col + 8 ; j++ ) {
-                    for ( i = block_row ; i < block_row + 8 ; i++ ) {
-                        if ( i == j ) {
-                            tmp = A[i][j];
-                        } else {
+        for ( block_col = 0 ; block_col < M ; block_col+=8) {
+            for ( block_row = 0 ; block_row < N ; block_row+=8 ) {
+                for ( i = block_row ; i < block_row + 8 ; i++ ) {
+                      if (block_col == block_row) {
+                           tmp = A[i][i]; 
+                        }
+                    for ( j = block_col ; j < block_col + 8 ; j++ ) {
+                        if ( i != j ) {
                             B[j][i] = A[i][j];
                         }
-                    if ( block_col == block_row ) {
-                        B[j][j] = tmp;
-                    }
-
-                    }
+                    } 
+                      if (block_col == block_row) {
+                        B[i][i] = tmp;
+                     }
                 }
             } 
         }   
     } 
-    /*else if ( M == 64) {
-    
-    } 
-    else {
-    
-    }*/
+    else if ( M == 64) {
+        for ( block_col = 0 ; block_col<M ; block_col+=4) {
+            for ( block_row = 0 ; block_row < N ; block_row += 4) {
+                for ( i = block_row ; i<block_row +4 ; i++) {
+                    for ( j = block_col ; j < block_col +4 ; j++) {
+                        if ( (i-block_row)==(j-block_col) )  {
+                            tmp = A[i][j];
+                            tmp1 = i;
+                            tmp2 = j;
+                        } else {
+                            B[j][i] = A[i][j];
+                           
+                        }
+                    }
+                    B[tmp2][tmp1] = tmp;
+                }
+                 
+            }
+        }
+ 
+    } else {
+        for ( block_col = 0 ; block_col<M ; block_col += 8) {
+            for ( block_row = 0 ; block_row<N ; block_row += 8 ) {
+                for ( i = block_row ; i<block_row+8 ; i++) {
+                    if(i>=N) {
+                        break;
+                    }
+                    for ( j = block_col ; j < block_col + 8 ; j++) {
+                        if (j>=M){
+                            break;
+                        }
+                        B[j][i] = A[i][j];
+                    }
+                }
+            }
+        }
+    }
 
 }
 
