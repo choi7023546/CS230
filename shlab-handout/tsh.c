@@ -1,7 +1,7 @@
 /* 
  * tsh - A tiny shell program with job control
  * 
- * <Put your name and login ID here>
+ * <choi jeeyoung 20150774>
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -110,8 +110,6 @@ int main(int argc, char **argv)
         case 'p':             /* don't print a prompt */
             emit_prompt = 0;  /* handy for automatic testing */
 	    break;
-	default:
-            usage();
 	}
     }
 
@@ -192,18 +190,16 @@ void eval(char *cmdline)
             }   
         } 
         // parent process
-            if (bg) {
-                addjob( jobs, pid, BG, cmdline );
-                sigprocmask(SIG_UNBLOCK,&set,NULL);
-                printf("[%d] (%d) %s",pid2jid(pid),pid,cmdline);
-            } 
-            else {
-                addjob(jobs,pid,FG,cmdline);
-                sigprocmask(SIG_UNBLOCK,&set,NULL);
-                waitfg(pid);
-            }
-            
-        
+        if (!bg) {
+            addjob( jobs, pid, FG, cmdline );
+            sigprocmask(SIG_UNBLOCK,&set,NULL);
+            waitfg(pid);
+        }
+        else {
+            addjob(jobs,pid,BG,cmdline);
+            sigprocmask(SIG_UNBLOCK,&set,NULL);
+            printf("[%d] (%d) %s",pid2jid(pid),pid,cmdline);
+        }      
     }
     return;
 }
@@ -342,13 +338,11 @@ void do_bgfg(char **argv)
  */
 void waitfg(pid_t pid)
 {
-    while(1) {
-        if(fgpid(jobs)!=pid) {
-            break;
-        } else {
-            sleep(1);
-        }
-    }
+    struct job_t *j = getjobpid(jobs,pid);
+    while(j->pid == pid && j->state == FG) {
+        sleep(1);
+    } 
+    
     return;
 }
 
